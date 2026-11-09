@@ -73,7 +73,7 @@ html.noborders .card,html.noborders .list,html.noborders .tile,html.noborders .f
 
 /* --- gear --- */
 #app{position:relative}
-.gearfix{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:3}
+.gearfix{position:absolute;top:30.5px;right:max(12px,env(safe-area-inset-right,0px));z-index:3}
 .gearfix+.hdr{padding-top:30px}
 .gearbtn{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;color:var(--dim);opacity:.85;transition:color .2s,transform .4s var(--ease)}
 .gearbtn:hover,.gearbtn:active{color:var(--fg)}.gearbtn:active{transform:rotate(60deg)}

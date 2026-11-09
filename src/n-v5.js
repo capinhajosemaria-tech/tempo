@@ -46,7 +46,7 @@ function enhance(h){return h
 
 /* --- Train tab --- */
 function vTrain(){const ap=activePlan();const tools=[['library','grid','Ready-made'],['planner','cal','Planner'],['planText','text','From text'],['mobility','lungs','Mobility'],['rmtest','bolt','1RM test'],['race','flag','Race'],['zones','gauge','Zones'],['gear','shoe','Gear']];
- return `<header class="hdr"><div><div class="eyebrow">${ap?esc(ap.name)+' · active':'No active plan'}</div><h1 class="h1">Train</h1></div><button class="iconbtn" data-act="newPlan" aria-label="New plan">${ic('plus',20)}</button></header>
+ return `<header class="hdr"><div><div class="eyebrow">${ap?esc(ap.name)+' · active':'No active plan'}</div><h1 class="h1">Train</h1></div></header>
  <button class="btn primary xl" data-act="startSheet">${ic('play',18)} Start workout</button>
  ${ap?planCard(ap):''}
  <div class="quick tools8">${tools.map(([v,i,l])=>`<button data-act="go" data-v="${v}">${ic(i,20)}${l}</button>`).join('')}</div>
