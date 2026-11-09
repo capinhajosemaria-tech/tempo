@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw
 D=os.path.dirname(os.path.abspath(__file__))
 css=open(f'{D}/style.css').read()+open(f'{D}/style-v4.css').read()+open(f'{D}/style-v5.css').read()
 import re
-FILES=['a-core.js','b-views.js','c-app.js','e-domain.js','f-views.js','g-stats.js','h-app.js','i-v4.js','j-views.js','k-app.js','l-ux.js','m-fix.js','n-v5.js','d-boot.js']
+FILES=['a-core.js','b-views.js','c-app.js','e-domain.js','f-views.js','g-stats.js','h-app.js','i-v4.js','j-views.js','k-app.js','l-ux.js','m-fix.js','n-v5.js','o-var.js','d-boot.js']
 START=re.compile(r"^(function |async function |const |let |/\*|'use strict'|Object\.assign|VIEWS\.|UI_BINDS|document\.|window\.|setInterval|save=|\(async|HOME_WIDGETS|SYNC_COLLS|ACT\.|syncNow=|mergeStates=|render=|\[)")
 chunks=[]
 for f in FILES:
@@ -52,17 +52,17 @@ head='''<!doctype html>
 <meta name="apple-mobile-web-app-title" content="Tempo">
 <meta name="theme-color" content="#120B2E">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v5.png">
+<link rel="icon" href="icon-192-v5.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 '''
 open(f'{out}/index.html','w').write(head+body+'</body>\n</html>\n')
-json.dump({"name":"Tempo","short_name":"Tempo","description":"Plan, log and track gym, running and cycling training.","start_url":"./","scope":"./","display":"standalone","background_color":"#0A0820","theme_color":"#120B2E","orientation":"portrait","icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png"},{"src":"icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]},open(f'{out}/manifest.json','w'),indent=2)
+json.dump({"name":"Tempo","short_name":"Tempo","description":"Plan, log and track gym, running and cycling training.","start_url":"./","scope":"./","display":"standalone","background_color":"#0A0820","theme_color":"#120B2E","orientation":"portrait","icons":[{"src":"icon-192-v5.png","sizes":"192x192","type":"image/png"},{"src":"icon-512-v5.png","sizes":"512x512","type":"image/png"},{"src":"icon-maskable-512-v5.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]},open(f'{out}/manifest.json','w'),indent=2)
 open(f'{out}/sw.js','w').write('''// Tempo offline cache. Bump VERSION on every update so phones fetch the new files.
-const VERSION='tempo-5.0.0';
-const FILES=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./apple-touch-icon.png'];
+const VERSION='tempo-5.1.0';
+const FILES=['./','./index.html','./manifest.json','./icon-192-v5.png','./icon-512-v5.png','./icon-maskable-512-v5.png','./apple-touch-icon-v5.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const req=e.request;if(req.method!=='GET')return;const url=new URL(req.url);
@@ -102,8 +102,8 @@ def icon(size,path,pad=0.0,rounded=True):
     d.ellipse([x2-r,y2-r,x2+r,y2+r],fill=pink)
     rh=L(4.4); d.ellipse([cx-rh,cy-rh,cx+rh,cy+rh],fill=pink)
     bg.resize((size,size),Image.LANCZOS).convert('RGB').save(path)
-icon(192,f'{out}/icon-192.png',pad=0.04)
-icon(512,f'{out}/icon-512.png',pad=0.04)
-icon(512,f'{out}/icon-maskable-512.png',pad=0.16)
-icon(180,f'{out}/apple-touch-icon.png',pad=0.06)
+icon(192,f'{out}/icon-192-v5.png',pad=0.04)
+icon(512,f'{out}/icon-512-v5.png',pad=0.04)
+icon(512,f'{out}/icon-maskable-512-v5.png',pad=0.16)
+icon(180,f'{out}/apple-touch-icon-v5.png',pad=0.06)
 print('built',len(body))

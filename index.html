@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-title" content="Tempo">
 <meta name="theme-color" content="#120B2E">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v5.png">
+<link rel="icon" href="icon-192-v5.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -805,7 +805,8 @@ const plural=(n,w,p)=>`${n} ${n===1?w:(p||(/[^aeiou]y$/.test(w)?w.slice(0,-1)+'i
 
 /* ================= types ================= */
 const CAT={gym:'Gym',run:'Running',bike:'Cycling',other:'Other'};
-const typeLabel=o=>o.type==='custom'?(o.customName||'Custom'):(CAT[o.type]||'Other');
+const typeLabel1=o=>o.type==='custom'?(o.customName||'Custom'):(CAT[o.type]||'Other');
+const typeLabel=o=>o.alts&&o.alts.length?[...new Set([o,...o.alts].map(typeLabel1))].join(' or ')+(new Set([o,...o.alts].map(typeLabel1)).size===1?` · ${o.alts.length+1} options`:''):typeLabel1(o);
 const typeKey=o=>CAT[o.type]?o.type:'other';
 const defaultCat=t=>CAT[t]?t:'other';
 const typePill=o=>`<span class="pill" style="--c:var(--${typeKey(o)})">${ic(typeKey(o),14)}${esc(typeLabel(o))}</span>`;
@@ -877,7 +878,8 @@ const ui={tab:'home',stack:[],sheet:null,range:'3m',statEx:null,armed:null,prTab
 /* ================= domain helpers ================= */
 const planById=id=>S.plans.find(p=>p.id===id);
 const activePlan=()=>planById(S.activePlanId)||null;
-const wkOf=(p,wid)=>p?p.workouts.find(w=>w.id===wid):null;
+const wkOf=(p,wid)=>{if(!p)return null;const w=p.workouts.find(w=>w.id===wid);if(w)return w;for(const m of p.workouts)if(m.alts){const a=m.alts.find(z=>z.id===wid);if(a)return a}return null};
+const altParent=(p,wid)=>p?p.workouts.find(m=>m.alts&&m.alts.some(z=>z.id===wid))||null:null;
 const exOf=(pid,wid,eid)=>{const w=wkOf(planById(pid),wid);return w?w.exercises.find(e=>e.id===eid):null};
 function sessionsIn(a,b){return S.sessions.filter(s=>s.start>=a&&s.start<b)}
 function exNames(){const m=new Map();for(const s of S.sessions)for(const x of s.ex)if(x.name)m.set(norm(x.name),x.name);for(const p of S.plans)for(const w of p.workouts)for(const e of w.exercises)if(e.name&&!m.has(norm(e.name)))m.set(norm(e.name),e.name);for(const r of S.prs)if(r.exName&&!m.has(norm(r.exName)))m.set(norm(r.exName),r.exName);return m}
@@ -1285,7 +1287,7 @@ function vSettingsV2(){
  ${ui.pendingImport?`<div class="banner"><div><b>Ready to restore</b><br><span class="muted">${plural(ui.pendingImport.plans.length,'plan')} and ${plural(ui.pendingImport.sessions.length,'workout')}. Your current data will be replaced.</span></div><button class="btn sm danger" data-act="importConfirm" data-confirm="Tap again to replace">Restore</button></div>`:''}</div>
  <div class="sec"><div class="h2">Data</div></div>
  <div class="card"><p class="muted sm">${plural(S.plans.length,'plan')} · ${plural(S.sessions.length,'workout')} · ${plural(S.prs.length,'added record')}</p><button class="btn danger" data-act="clearAll" data-confirm="Tap again to erase everything">Erase all data</button><p class="hint">With sync on, erasing also clears the synced copy.</p></div>
- <p class="hint">${APP} works offline once installed. iPhone: Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install app. Version 5.0.</p>`}
+ <p class="hint">${APP} works offline once installed. iPhone: Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install app. Version 5.1.</p>`}
 function vSync(){const y=S.sync;const inPreview=/claude\.ai|claudeusercontent/.test(location.hostname);
  if(!y.token)return `${topbar('Sync')}
  <h1 class="h1">Sync between devices</h1>
@@ -1760,7 +1762,7 @@ function exFromTpl(e,ref,pg){const last=lastEx(e.name,e.cat);const x={id:uid(),n
  return x}
 function newSessionV3(p,w,past){const pg=planProg(p);const s={id:uid(),start:past?Date.now()-3600e3:Date.now(),planId:p.id,workoutId:w.id,name:w.name||'Workout',type:w.type,customName:w.customName,notes:'',past:!!past,duration:past?3600:'',ex:w.exercises.map(e=>exFromTpl(e,[p.id,w.id,e.id],pg))};
  if(pg){s.planWeek=pg.w;s.deload=pg.deload}const ck=todayCheck();if(ck)s.check={e:ck.e,sl:ck.sl,so:ck.so};return s}
-function repeatOf(s){if(s.planId){const p=planById(s.planId),w=wkOf(p,s.workoutId);if(p&&w)return newSession(p,w,false)}
+function repeatOfV51(s){if(s.planId){const p=planById(s.planId),w=wkOf(p,s.workoutId);if(p&&w)return newSession(p,w,false)}
  const n=newAdhoc(s.name,typeKey(s),false);return n}
 function exHistory(name,cat){const n=norm(name);const out=[];for(let i=S.sessions.length-1;i>=0&&out.length<12;i--){const s=S.sessions[i];const x=s.ex.find(z=>norm(z.name)===n&&(!cat||z.cat===cat));if(x)out.push({s,x})}return out}
 
@@ -2489,7 +2491,7 @@ function tplExCard(p,w,e,i,n){const b=`${p.id}|${w.id}|${e.id}`;let h=tplExCardV
  if(e.cat==='gym')h=h.replace('<label class="field"><span>Notes and cues</span>',`<label class="field"><span>Tempo <em>down-pause-up-pause, e.g. 3-1-1-0</em></span><input class="in" id="tm-${e.id}" value="${esc(e.tempo||'')}" data-b="e|${b}|tempo" placeholder="optional" autocomplete="off"></label><label class="field"><span>Notes and cues</span>`);
  h=h.replace('<div class="excard"><div class="exhead">',`<div class="excard"><div class="exhead"><span class="grip" aria-label="Hold and drag to reorder">${ic('grip',18)}</span>`);
  return `<div data-sid="${e.id}">${h}</div>`}
-function vWorkout(o){let h=vWorkoutV2(o);const i=h.indexOf('<div data-sid=');const j=h.indexOf('<button class="btn block" data-act="tplAddEx"');if(i>0&&j>i)h=h.slice(0,i)+`<div class="sortable" data-sortable="ex" data-pid="${o.pid}" data-wid="${o.wid}">`+h.slice(i,j)+'</div>'+h.slice(j);return h}
+function vWorkoutV4(o){let h=vWorkoutV2(o);const i=h.indexOf('<div data-sid=');const j=h.indexOf('<button class="btn block" data-act="tplAddEx"');if(i>0&&j>i)h=h.slice(0,i)+`<div class="sortable" data-sortable="ex" data-pid="${o.pid}" data-wid="${o.wid}">`+h.slice(i,j)+'</div>'+h.slice(j);return h}
 
 /* --- plans, settings, stats wrappers --- */
 function vPlansV4(){const h=vPlansV3();const cut=h.indexOf('</header>')+9;return h.slice(0,cut)+`<div class="quick" style="grid-template-columns:repeat(3,1fr)"><button data-act="go" data-v="library">${ic('grid',20)}Ready-made</button><button data-act="go" data-v="planner">${ic('cal',20)}Planner</button><button data-act="go" data-v="planText">${ic('text',20)}From text</button></div>`+h.slice(cut)}
@@ -2893,7 +2895,7 @@ function vYou(){const n=S.sessions.length;const first=S.sessions[0];const tot=S.
  ${YOU_GROUPS.map(([g,rows])=>`<div class="ygroup"><div class="sec"><div class="h2">${g}</div></div><div class="list">${rows.map(([v,i,t,s])=>`<div class="yrow" data-q="${esc((t+' '+g).toLowerCase())}">${navRow(v,i,t,s())}</div>`).join('')}</div></div>`).join('')}
  <div class="ygroup"><div class="sec"><div class="h2">Daily</div></div><div class="card yrow" data-q="daily check-in ask how i feel" style="padding:4px 16px">${sw(S.settings.dailyAsk!==false,'toggleDailyAsk','','Ask how I feel each morning')}</div>
  <div class="list yrow" data-q="tutorial tour help"><button class="li" data-act="tourStart"><span class="lt" style="--c:var(--accent)">${ic('school',19)}</span><span class="grow"><span class="t">Interactive tutorial</span><span class="s">A guided tour with sample data</span></span><span class="chev">${ic('chev',20)}</span></button></div></div>
- <p class="hint" style="text-align:center">${APP} · Version 5.0</p>`}
+ <p class="hint" style="text-align:center">${APP} · Version 5.1</p>`}
 function vAppearance(){const st=S.settings;return `${topbar('Appearance')}<h1 class="h1">Appearance</h1>
  <div class="field"><span>Accent</span><div class="swatches">${Object.entries(ACCENTS).sort((a,b)=>(a[0]==='aurora'?-1:0)-(b[0]==='aurora'?-1:0)).map(([k,v])=>`<button class="swatch ${(st.accent||'aurora')===k?'on':''}" style="--c:${v[0]};background:linear-gradient(135deg,${v[0]},${ACCENT2[k]})" data-act="accent" data-k="${k}" aria-label="${v[2]}">${(st.accent||'aurora')===k?ic('check',18):''}</button>`).join('')}</div></div>
  <div class="field"><span>Text size</span>${seg([['normal','Normal'],['large','Large']],st.textSize||'normal','setPref','data-k="textSize"')}</div>
@@ -3019,6 +3021,33 @@ TOUR.length=0;TOUR.push(
  {pre:()=>{ui.stack=[];ui.tab='home'},sel:'[data-act="go"][data-v="customize"]',t:'Make Today yours',d:'Choose cards, order and size. Or press and hold a card on Today and drag it.'},
  {sel:null,t:"You're all set",d:'That was sample data. Your own data is back exactly as you left it. Replay the tour any time from You.'});
 const _tourStartV5=ACT.tourStart;ACT.tourStart=()=>{ui.fan=false;tourStart()};
+
+/* ================= 5.1: workout options (one day, several choices) ================= */
+const tlb=w=>{const a=typeLabel1(w),b=wBrief(w);return b===a?a:a+' · '+b};
+function wBrief(w){const ex=w.exercises||[];if(!ex.length)return 'No exercises yet';const e=ex[0];
+ if(ex.length===1&&(e.cat==='run'||e.cat==='bike')){const bits=[];if(num(e.dist))bits.push(fmtNum(e.dist,1)+' km');if(num(e.time))bits.push(fmtDur(e.time));if(e.mode==='struct')bits.push('intervals');return (e.name||CAT[e.cat])+(bits.length?' · '+bits.join(' · '):'')}
+ return ex.slice(0,3).map(x=>x.name||'Exercise').join(', ')+(ex.length>3?` +${ex.length-3}`:'')}
+function optionsBlock(p,w){const alts=w.alts||[];
+ return `<div class="sec"><div class="h2">Options for this day</div><span class="muted sm">${alts.length?plural(alts.length+1,'choice'):''}</span></div>
+ ${alts.length?`<div class="list"><div class="li"><span class="lt" style="--c:var(--${typeKey(w)})">1</span><span class="grow"><span class="t">${esc(w.name||'This workout')}</span><span class="s">${esc(tlb(w))}</span></span><span class="muted xs">main</span></div>${alts.map((a,i)=>`<button class="li" data-act="go" data-v="workout" data-pid="${p.id}" data-wid="${a.id}"><span class="lt" style="--c:var(--${typeKey(a)})">${i+2}</span><span class="grow"><span class="t">${esc(a.name||'Option '+(i+2))}</span><span class="s">${esc(tlb(a))}</span></span><span class="chev">${ic('chev',18)}</span></button>`).join('')}</div>`:`<p class="muted sm">Give this day a second choice, for example a 30 km ride or a 12 km run. When you start it, Tempo asks which one you are doing.</p>`}
+ <button class="btn block line" data-act="altAdd" data-pid="${p.id}" data-wid="${w.id}">${ic('plus',18)} Add an option</button>`}
+function vWorkout(o){const p=planById(o.pid);const par=altParent(p,o.wid);let h=vWorkoutV4(o);const w=wkOf(p,o.wid);if(!w)return h;
+ if(par){const n=par.alts.findIndex(a=>a.id===w.id)+2;
+  h=h.replace(/<label class="field"><span>Workout name<\/span>/,`<div class="banner" style="border-style:solid"><div><b>Option ${n} of ${esc(par.name||'this day')}</b><br><span class="muted sm">Only one of the options counts for the day. Tempo asks which one when you start.</span></div></div><label class="field"><span>Option name</span>`);
+  h=h.replace(/<button class="btn danger block" data-act="delWorkout"[^>]*>Delete workout<\/button>/,`<button class="btn danger block" data-act="altDel" data-pid="${p.id}" data-wid="${w.id}" data-confirm="Tap again to delete">Delete this option</button>`);return h}
+ const k=h.indexOf('<button class="btn danger block" data-act="delWorkout"');return k>0?h.slice(0,k)+optionsBlock(p,w)+h.slice(k):h+optionsBlock(p,w)}
+SHEETS.pickvar=function(){const v=ui.pv;const p=planById(v.pid),w=wkOf(p,v.wid);if(!w)return '';const all=[w,...(w.alts||[])];
+ return `<div class="h2">${esc(w.name||'Workout')}: which one today?</div><p class="muted sm">${v.past?'Pick what you did.':'Pick one. It counts as this day in your plan.'}</p><div class="list">${all.map((a,i)=>`<button class="opt" data-act="startW" data-pid="${p.id}" data-wid="${w.id}" data-alt="${i?a.id:'main'}"><span class="lt" style="--c:var(--${typeKey(a)})">${ic(typeKey(a),18)}</span><span class="grow"><b>${esc(a.name||'Option '+(i+1))}</b><br><span class="muted sm">${esc(tlb(a))}</span></span><span class="chev">${ic('chev',18)}</span></button>`).join('')}</div>`};
+Object.assign(ACT,{
+ startW:d=>{const p=planById(d.pid);let w=wkOf(p,d.wid);if(!w)return;const par=altParent(p,w.id);if(par){d={...d,wid:par.id,alt:w.id};w=par}
+  const past=d.past!=null?d.past==='1':!!(ui.sheet&&ui.startPast);
+  if(w.alts&&w.alts.length&&!d.alt){ui.pv={pid:p.id,wid:w.id,past};ui.sheet={t:'pickvar'};renderSheet();renderFab&&renderFab();return}
+  if(ui.sheet&&ui.sheet.t==='pickvar')d.past=ui.pv&&ui.pv.past?'1':'0';
+  const pst=d.past!=null?d.past==='1':past;const v=d.alt&&d.alt!=='main'?(w.alts||[]).find(a=>a.id===d.alt):null;
+  const s=newSession(p,v||w,pst);if(v){s.workoutId=w.id;s.variantId=v.id;s.dayName=w.name}ui.sheet=null;startSession(s)},
+ altAdd:d=>{const p=planById(d.pid);const w=wkOf(p,d.wid);w.alts=w.alts||[];const type=w.type==='run'?'bike':w.type==='bike'?'run':w.type;const a={id:uid(),name:'Option '+(w.alts.length+2),type,customName:'',img:'',exercises:[]};w.alts.push(a);save();go('workout',{pid:p.id,wid:a.id})},
+ altDel:d=>{const p=planById(d.pid);const par=altParent(p,d.wid);if(!par)return;withUndo('Option deleted',()=>{par.alts=par.alts.filter(a=>a.id!==d.wid);if(!par.alts.length)delete par.alts;save();back()})}});
+function repeatOf(s){if(s.planId){const p=planById(s.planId),w=wkOf(p,s.variantId||s.workoutId);if(p&&w){const r=newSession(p,w,false);if(s.variantId){r.workoutId=s.workoutId;r.variantId=s.variantId}return r}}return repeatOfV51(s)}
 
 (async function boot(){
  await DB.open();let raw=await DB.get('state');

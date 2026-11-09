@@ -48,7 +48,7 @@ function tplExCard(p,w,e,i,n){const b=`${p.id}|${w.id}|${e.id}`;let h=tplExCardV
  if(e.cat==='gym')h=h.replace('<label class="field"><span>Notes and cues</span>',`<label class="field"><span>Tempo <em>down-pause-up-pause, e.g. 3-1-1-0</em></span><input class="in" id="tm-${e.id}" value="${esc(e.tempo||'')}" data-b="e|${b}|tempo" placeholder="optional" autocomplete="off"></label><label class="field"><span>Notes and cues</span>`);
  h=h.replace('<div class="excard"><div class="exhead">',`<div class="excard"><div class="exhead"><span class="grip" aria-label="Hold and drag to reorder">${ic('grip',18)}</span>`);
  return `<div data-sid="${e.id}">${h}</div>`}
-function vWorkout(o){let h=vWorkoutV2(o);const i=h.indexOf('<div data-sid=');const j=h.indexOf('<button class="btn block" data-act="tplAddEx"');if(i>0&&j>i)h=h.slice(0,i)+`<div class="sortable" data-sortable="ex" data-pid="${o.pid}" data-wid="${o.wid}">`+h.slice(i,j)+'</div>'+h.slice(j);return h}
+function vWorkoutV4(o){let h=vWorkoutV2(o);const i=h.indexOf('<div data-sid=');const j=h.indexOf('<button class="btn block" data-act="tplAddEx"');if(i>0&&j>i)h=h.slice(0,i)+`<div class="sortable" data-sortable="ex" data-pid="${o.pid}" data-wid="${o.wid}">`+h.slice(i,j)+'</div>'+h.slice(j);return h}
 
 /* --- plans, settings, stats wrappers --- */
 function vPlansV4(){const h=vPlansV3();const cut=h.indexOf('</header>')+9;return h.slice(0,cut)+`<div class="quick" style="grid-template-columns:repeat(3,1fr)"><button data-act="go" data-v="library">${ic('grid',20)}Ready-made</button><button data-act="go" data-v="planner">${ic('cal',20)}Planner</button><button data-act="go" data-v="planText">${ic('text',20)}From text</button></div>`+h.slice(cut)}

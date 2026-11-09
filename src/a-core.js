@@ -28,7 +28,8 @@ const plural=(n,w,p)=>`${n} ${n===1?w:(p||(/[^aeiou]y$/.test(w)?w.slice(0,-1)+'i
 
 /* ================= types ================= */
 const CAT={gym:'Gym',run:'Running',bike:'Cycling',other:'Other'};
-const typeLabel=o=>o.type==='custom'?(o.customName||'Custom'):(CAT[o.type]||'Other');
+const typeLabel1=o=>o.type==='custom'?(o.customName||'Custom'):(CAT[o.type]||'Other');
+const typeLabel=o=>o.alts&&o.alts.length?[...new Set([o,...o.alts].map(typeLabel1))].join(' or ')+(new Set([o,...o.alts].map(typeLabel1)).size===1?` · ${o.alts.length+1} options`:''):typeLabel1(o);
 const typeKey=o=>CAT[o.type]?o.type:'other';
 const defaultCat=t=>CAT[t]?t:'other';
 const typePill=o=>`<span class="pill" style="--c:var(--${typeKey(o)})">${ic(typeKey(o),14)}${esc(typeLabel(o))}</span>`;
@@ -105,7 +106,8 @@ const ui={tab:'home',stack:[],sheet:null,range:'3m',statEx:null,armed:null,prTab
 /* ================= domain helpers ================= */
 const planById=id=>S.plans.find(p=>p.id===id);
 const activePlan=()=>planById(S.activePlanId)||null;
-const wkOf=(p,wid)=>p?p.workouts.find(w=>w.id===wid):null;
+const wkOf=(p,wid)=>{if(!p)return null;const w=p.workouts.find(w=>w.id===wid);if(w)return w;for(const m of p.workouts)if(m.alts){const a=m.alts.find(z=>z.id===wid);if(a)return a}return null};
+const altParent=(p,wid)=>p?p.workouts.find(m=>m.alts&&m.alts.some(z=>z.id===wid))||null:null;
 const exOf=(pid,wid,eid)=>{const w=wkOf(planById(pid),wid);return w?w.exercises.find(e=>e.id===eid):null};
 function sessionsIn(a,b){return S.sessions.filter(s=>s.start>=a&&s.start<b)}
 function exNames(){const m=new Map();for(const s of S.sessions)for(const x of s.ex)if(x.name)m.set(norm(x.name),x.name);for(const p of S.plans)for(const w of p.workouts)for(const e of w.exercises)if(e.name&&!m.has(norm(e.name)))m.set(norm(e.name),e.name);for(const r of S.prs)if(r.exName&&!m.has(norm(r.exName)))m.set(norm(r.exName),r.exName);return m}

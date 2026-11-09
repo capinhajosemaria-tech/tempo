@@ -64,7 +64,7 @@ function exFromTpl(e,ref,pg){const last=lastEx(e.name,e.cat);const x={id:uid(),n
  return x}
 function newSessionV3(p,w,past){const pg=planProg(p);const s={id:uid(),start:past?Date.now()-3600e3:Date.now(),planId:p.id,workoutId:w.id,name:w.name||'Workout',type:w.type,customName:w.customName,notes:'',past:!!past,duration:past?3600:'',ex:w.exercises.map(e=>exFromTpl(e,[p.id,w.id,e.id],pg))};
  if(pg){s.planWeek=pg.w;s.deload=pg.deload}const ck=todayCheck();if(ck)s.check={e:ck.e,sl:ck.sl,so:ck.so};return s}
-function repeatOf(s){if(s.planId){const p=planById(s.planId),w=wkOf(p,s.workoutId);if(p&&w)return newSession(p,w,false)}
+function repeatOfV51(s){if(s.planId){const p=planById(s.planId),w=wkOf(p,s.workoutId);if(p&&w)return newSession(p,w,false)}
  const n=newAdhoc(s.name,typeKey(s),false);return n}
 function exHistory(name,cat){const n=norm(name);const out=[];for(let i=S.sessions.length-1;i>=0&&out.length<12;i--){const s=S.sessions[i];const x=s.ex.find(z=>norm(z.name)===n&&(!cat||z.cat===cat));if(x)out.push({s,x})}return out}
 

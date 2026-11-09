@@ -71,7 +71,7 @@ function vYou(){const n=S.sessions.length;const first=S.sessions[0];const tot=S.
  ${YOU_GROUPS.map(([g,rows])=>`<div class="ygroup"><div class="sec"><div class="h2">${g}</div></div><div class="list">${rows.map(([v,i,t,s])=>`<div class="yrow" data-q="${esc((t+' '+g).toLowerCase())}">${navRow(v,i,t,s())}</div>`).join('')}</div></div>`).join('')}
  <div class="ygroup"><div class="sec"><div class="h2">Daily</div></div><div class="card yrow" data-q="daily check-in ask how i feel" style="padding:4px 16px">${sw(S.settings.dailyAsk!==false,'toggleDailyAsk','','Ask how I feel each morning')}</div>
  <div class="list yrow" data-q="tutorial tour help"><button class="li" data-act="tourStart"><span class="lt" style="--c:var(--accent)">${ic('school',19)}</span><span class="grow"><span class="t">Interactive tutorial</span><span class="s">A guided tour with sample data</span></span><span class="chev">${ic('chev',20)}</span></button></div></div>
- <p class="hint" style="text-align:center">${APP} · Version 5.0</p>`}
+ <p class="hint" style="text-align:center">${APP} · Version 5.1</p>`}
 function vAppearance(){const st=S.settings;return `${topbar('Appearance')}<h1 class="h1">Appearance</h1>
  <div class="field"><span>Accent</span><div class="swatches">${Object.entries(ACCENTS).sort((a,b)=>(a[0]==='aurora'?-1:0)-(b[0]==='aurora'?-1:0)).map(([k,v])=>`<button class="swatch ${(st.accent||'aurora')===k?'on':''}" style="--c:${v[0]};background:linear-gradient(135deg,${v[0]},${ACCENT2[k]})" data-act="accent" data-k="${k}" aria-label="${v[2]}">${(st.accent||'aurora')===k?ic('check',18):''}</button>`).join('')}</div></div>
  <div class="field"><span>Text size</span>${seg([['normal','Normal'],['large','Large']],st.textSize||'normal','setPref','data-k="textSize"')}</div>
