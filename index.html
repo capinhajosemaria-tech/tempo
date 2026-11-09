@@ -598,6 +598,20 @@ body.anim .ring .prog{animation:draw 1.1s cubic-bezier(.2,.8,.2,1) both}
 #tour .tcard p{font-size:14.5px;color:var(--muted);line-height:1.45}
 #tour .tcard .btnrow{margin-top:6px}
 .cue .ic{display:inline-block;vertical-align:-3px;margin-right:4px}
+/* v4.1 fixes */
+html,body{overflow-x:hidden;max-width:100%}
+#app{overflow-x:clip}
+.feat{clip-path:inset(0 round var(--r));isolation:isolate}
+.feat .plate{right:-30px;top:-30px;width:150px;height:150px}
+.ring b{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;line-height:1}
+.rbig .ring b span{line-height:.9;margin-top:4px}
+.rbig .ring b small{margin-top:0}
+.feat-num{font-weight:250}
+.dq{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.dqh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dqh b{font-weight:600;font-size:15px}
+.dq .ckc button{min-height:44px;font-size:16px;font-weight:500}
+.ckc button{text-align:center;display:grid;place-items:center}
 </style>
 
 <div id="app"></div>
@@ -1134,7 +1148,7 @@ function vSettingsV2(){
  ${ui.pendingImport?`<div class="banner"><div><b>Ready to restore</b><br><span class="muted">${plural(ui.pendingImport.plans.length,'plan')} and ${plural(ui.pendingImport.sessions.length,'workout')}. Your current data will be replaced.</span></div><button class="btn sm danger" data-act="importConfirm" data-confirm="Tap again to replace">Restore</button></div>`:''}</div>
  <div class="sec"><div class="h2">Data</div></div>
  <div class="card"><p class="muted sm">${plural(S.plans.length,'plan')} · ${plural(S.sessions.length,'workout')} · ${plural(S.prs.length,'added record')}</p><button class="btn danger" data-act="clearAll" data-confirm="Tap again to erase everything">Erase all data</button><p class="hint">With sync on, erasing also clears the synced copy.</p></div>
- <p class="hint">${APP} works offline once installed. iPhone: Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install app. Version 4.0.</p>`}
+ <p class="hint">${APP} works offline once installed. iPhone: Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install app. Version 4.1.</p>`}
 function vSync(){const y=S.sync;const inPreview=/claude\.ai|claudeusercontent/.test(location.hostname);
  if(!y.token)return `${topbar('Sync')}
  <h1 class="h1">Sync between devices</h1>
@@ -2314,7 +2328,7 @@ Object.assign(WIDGETS,{
   const full=ck.e&&ck.sl&&ck.so&&!ui.ckEdit;const extra=[num(ck.hrs)>0?`${fmtNum(ck.hrs,1)} h sleep`:'',num(ck.steps)>0?`${fmtNum(ck.steps,0)} steps`:''].filter(Boolean).join(' · ');
   return `<div class="card ready" style="--rc:${col}"><div class="sec" style="margin:0;position:relative"><div class="eyebrow">Readiness · Strain</div><button class="btn ghost sm" data-act="go" data-v="readiness">Details</button></div>
   <div class="rings"><div class="rbig"><div class="ring" style="color:${col}">${ringP(r/100,col,5)}<b><span>${r}</span><small>READY</small></b></div><span class="val">${lab}</span></div>
-  <div class="rbig"><div class="ring" style="color:var(--strain)">${ringP(strain/21,'var(--strain)',5)}<b><span>${fmtNum(strain,1)}</span><small>STRAIN</small></b></div><span class="val">7-day avg ${fmtNum(strainOf(avg),1)}</span></div></div>
+  <div class="rbig"><div class="ring" style="color:var(--strain)">${ringP(strain/21,'var(--strain)',5)}<b><span>${fmtNum(strain,1)}</span><small>STRAIN</small></b></div><span class="val">${avg>0?`7-day avg ${strainOf(avg).toFixed(1)}`:'No load yet'}</span></div></div>
   ${full?`<p class="hint" style="position:relative;text-align:center">Energy ${ck.e} · Sleep ${ck.sl} · Soreness ${ck.so}${extra?' · '+extra:''} <button class="btn ghost sm" data-act="ckEdit">Edit</button></p>`:`<div class="ckrow"><span style="grid-column:1/-1;font-weight:600;color:var(--fg)">How do you feel today? <em>1 low · 5 high</em></span>${row('e','Energy')}${row('sl','Sleep')}${row('so','Soreness')}
    <span>Hours</span><div class="grid2"><input class="in sm" id="ck-h" inputmode="decimal" value="${esc(ck.hrs??'')}" data-b="ck|hrs" data-t="num" placeholder="sleep, e.g. 7.5"><input class="in sm" id="ck-s" inputmode="numeric" value="${esc(ck.steps??'')}" data-b="ck|steps" data-t="num" placeholder="steps yesterday"></div>
    ${ck.e&&ck.sl&&ck.so?`<span></span><button class="btn sm" data-act="ckDone">Done</button>`:''}</div>`}</div>`},
@@ -2355,7 +2369,7 @@ function vWorkout(o){let h=vWorkoutV2(o);const i=h.indexOf('<div data-sid=');con
 
 /* --- plans, settings, stats wrappers --- */
 function vPlans(){const h=vPlansV3();const cut=h.indexOf('</header>')+9;return h.slice(0,cut)+`<div class="quick" style="grid-template-columns:repeat(3,1fr)"><button data-act="go" data-v="library">${ic('grid',20)}Ready-made</button><button data-act="go" data-v="planner">${ic('cal',20)}Planner</button><button data-act="go" data-v="planText">${ic('text',20)}From text</button></div>`+h.slice(cut)}
-function vSettings(){const h=vSettingsV3();const mark='<div class="sec"><div class="h2">Tools</div></div><div class="list">';const add=`<button class="li" data-act="tourStart"><span class="lt" style="--c:var(--accent)">${ic('school',19)}</span><span class="grow"><span class="t">Interactive tutorial</span><span class="s">A guided tour with sample data</span></span><span class="chev">${ic('chev',20)}</span></button>`+[['onboard','sliders','Set up my plan','Three questions, then a plan for you'],['library','grid','Ready-made plans','PPL, 5/3/1, Couch to 5 km and more'],['planner','cal','Planner','Put workouts on days'],['challenges','star','Monthly challenges','A goal for this month'],['year','trend','Year in review','Your year in numbers'],['journal','book','Journal','Notes and progress photos'],['gear','shoe','Shoes and bikes','Kilometres per pair'],['injuries','bandage','Injuries','Track a sore spot'],['mobility','lungs','Mobility','Guided stretching routines'],['rmtest','bolt','1RM test','Find your one-rep max']].map(([v,i,t,s])=>navRow(v,i,t,s)).join('');
+function vSettingsV4(){const h=vSettingsV3();const mark='<div class="sec"><div class="h2">Tools</div></div><div class="list">';const add=`<button class="li" data-act="tourStart"><span class="lt" style="--c:var(--accent)">${ic('school',19)}</span><span class="grow"><span class="t">Interactive tutorial</span><span class="s">A guided tour with sample data</span></span><span class="chev">${ic('chev',20)}</span></button>`+[['onboard','sliders','Set up my plan','Three questions, then a plan for you'],['library','grid','Ready-made plans','PPL, 5/3/1, Couch to 5 km and more'],['planner','cal','Planner','Put workouts on days'],['challenges','star','Monthly challenges','A goal for this month'],['year','trend','Year in review','Your year in numbers'],['journal','book','Journal','Notes and progress photos'],['gear','shoe','Shoes and bikes','Kilometres per pair'],['injuries','bandage','Injuries','Track a sore spot'],['mobility','lungs','Mobility','Guided stretching routines'],['rmtest','bolt','1RM test','Find your one-rep max']].map(([v,i,t,s])=>navRow(v,i,t,s)).join('');
  return h.includes(mark)?h.replace(mark,mark+add):h}
 function vStats(){let h=vStatsV3();const mark='<div class="sec"><div class="h2">Gym</div></div>';if(!h.includes(mark))return h;const now=Date.now();const ws=weekStart(now);const sets={};
  for(const s of sessionsIn(ws-21*DAY,Infinity))for(const x of s.ex){if(x.cat!=='gym')continue;const g=x.mg||guessMG(x.name);if(!g||g==='full')continue;for(const z of x.sets||[])if(z.t!=='w'&&(num(z.r)>0||z.t==='f'))sets[g]=(sets[g]||0)+1}
@@ -2657,6 +2671,27 @@ window.addEventListener('resize',()=>{if(ui.tour)tourShow()});
 ACT.tourStart=()=>tourStart();
 const _saveT=save;save=function(){if(ui.tour){saveVersion++;return}_saveT()};
 const _syncNowT=syncNow;syncNow=function(){if(ui.tour)return Promise.resolve();return _syncNowT()};
+
+/* ================= v4.1: daily check-in prompt and fixes ================= */
+function vSettings(){const h=vSettingsV4();const mark='<div class="field"><span>Appearance</span>';const add=`<div class="card" style="padding:4px 16px">${sw(S.settings.dailyAsk!==false,'toggleDailyAsk','','Ask how I feel the first time I open the app each day')}</div>`;return h.includes(mark)?h.replace(mark,add+mark):h}
+function needDailyAsk(){if(!S||S.sample||ui.tour||ui.sheet||S.active)return false;if(S.settings.dailyAsk===false)return false;const top=ui.stack[ui.stack.length-1];if(top&&['onboard','session','live','mplay'].includes(top.v))return false;const d=ymd(Date.now());if(S.askDay===d)return false;const c=todayCheck();if(c&&c.e&&c.sl&&c.so)return false;return true}
+function maybeAskCheck(){if(!needDailyAsk())return;S.askDay=ymd(Date.now());save();ui.sheet={t:'daily'};renderSheet()}
+SHEETS.daily=function(){const ck=todayCheck()||{};const row=(k,label,lo,hi)=>`<div class="dq"><div class="dqh"><b>${label}</b><span class="muted xs">${lo} · ${hi}</span></div><div class="ckc">${[1,2,3,4,5].map(v=>`<button class="${ck[k]===v?'on':''}" data-act="dailySet" data-k="${k}" data-n="${v}" aria-label="${label} ${v} of 5">${v}</button>`).join('')}</div></div>`;
+ const h=new Date().getHours();const hello=h<12?'Good morning':h<19?'Good afternoon':'Good evening';
+ return `<div class="eyebrow">${fmtDate(Date.now(),{weekday:'long',day:'numeric',month:'long'})}</div><div class="h2" style="font-size:24px">${hello}. How do you feel?</div><p class="muted sm">Takes ten seconds and makes your readiness score accurate.</p>
+ ${row('e','Energy','drained','full of energy')}${row('sl','Sleep quality','poor','great')}${row('so','Soreness','none','very sore')}
+ <div class="grid2"><label class="field"><span>Hours slept</span><input class="in" id="dq-h" inputmode="decimal" value="${esc(ck.hrs??'')}" data-b="ck|hrs" data-t="num" placeholder="e.g. 7.5"></label><label class="field"><span>Steps yesterday</span><input class="in" id="dq-s" inputmode="numeric" value="${esc(ck.steps??'')}" data-b="ck|steps" data-t="num" placeholder="optional"></label></div>
+ <button class="btn primary xl" data-act="dailySave">Save</button>
+ <div class="btnrow"><button class="btn line" data-act="dailySkip">Not today</button><button class="btn line" data-act="dailyNever">Don't ask again</button></div>
+ <p class="hint" style="text-align:center">You can turn this back on in Settings, and always check in from the Readiness card.</p>`};
+Object.assign(ACT,{
+ dailySet:d=>{setCheck(d.k,+d.n);renderSheet()},
+ dailySave:()=>{const c=todayCheck();ui.sheet=null;ui.ckEdit=false;save();render();toast(c&&c.e&&c.sl&&c.so?`Readiness ${readiness()} · ${readyBand(readiness())[1]}`:'Saved')},
+ dailySkip:()=>{ui.sheet=null;renderSheet()},
+ dailyNever:()=>{S.settings.dailyAsk=false;ui.sheet=null;save();render();toast('Turned off. Switch it back on in Settings.')},
+ toggleDailyAsk:()=>{S.settings.dailyAsk=S.settings.dailyAsk===false;save();render()}});
+setTimeout(function waitBoot(){if(!S){setTimeout(waitBoot,300);return}setTimeout(maybeAskCheck,700)},400);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(maybeAskCheck,600)});
 
 (async function boot(){
  await DB.open();let raw=await DB.get('state');
