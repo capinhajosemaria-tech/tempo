@@ -87,8 +87,8 @@ const schedOn=d=>S.schedule.filter(x=>x.date===d);
 function schedDone(x){const s=sessionsIn(new Date(x.date+'T00:00').getTime(),new Date(x.date+'T00:00').getTime()+DAY);return s.some(z=>z.workoutId===x.wid)}
 
 /* ================= live timer audio ================= */
-let actx=null;function beep(f=880,d=.12,v=.18){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d)}catch(e){}}
-const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+let actx=null;function beep(f=880,d=.12,v=.18){if(S&&S.settings&&S.settings.sound===false)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d)}catch(e){}}
+const buzz=p=>{if(S&&S.settings&&S.settings.haptics===false)return;try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 function makeSampleV4(){const st=makeSampleV3();const now=Date.now();
  const sh={id:uid(),kind:'shoe',name:'Pegasus 41',startKm:520,limit:700,retired:false},bk={id:uid(),kind:'bike',name:'Road bike',startKm:3200,limit:'',retired:false};st.gear=[sh,bk];
  for(const s of st.sessions)for(const x of s.ex){if(x.cat==='run')x.gear=sh.id;if(x.cat==='bike')x.gear=bk.id}

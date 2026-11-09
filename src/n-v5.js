@@ -6,8 +6,8 @@ ACCENTS.aurora=['#FF5D8F','#FFFFFF','Aurora'];
 const ACCENT2={aurora:'#A46BFF',blue:'#7C5CFF',mint:'#5CE1E6',amber:'#FF7A59',red:'#FF9F43',violet:'#5CE1E6'};
 const HOME_DEFAULT=[['feat',1],['start',1],['planned',1],['upnext',1],['plan',1],['month',1],['ready',1],['insights',1],['recap',1],['goals',1],['race',1],['challenge',1],['week',0],['repeat',0],['last',1],['quick',0]];
 HOME_WIDGETS.push(['month','This month']);
-function emptyState(){const s=emptyStateV4();s.v=5;s.settings.accent='aurora';s.settings.theme='dark';s.settings.home=HOME_DEFAULT.map(([id,on])=>({id,on:!!on}));s.settings.wsize={};return s}
-function migrate(st){const was=st.v||1;st=migrateV4(st);if(was<5){st.settings.home=HOME_DEFAULT.map(([id,on])=>({id,on:!!on}));if(!st.settings.accent||st.settings.accent==='blue')st.settings.accent='aurora';st.settings.theme='dark'}st.settings.wsize=st.settings.wsize||{};
+function emptyStateV5(){const s=emptyStateV4();s.v=5;s.settings.accent='aurora';s.settings.theme='dark';s.settings.home=HOME_DEFAULT.map(([id,on])=>({id,on:!!on}));s.settings.wsize={};return s}
+function migrateV5(st){const was=st.v||1;st=migrateV4(st);if(was<5){st.settings.home=HOME_DEFAULT.map(([id,on])=>({id,on:!!on}));if(!st.settings.accent||st.settings.accent==='blue')st.settings.accent='aurora';st.settings.theme='dark'}st.settings.wsize=st.settings.wsize||{};
  const ids=new Set(st.settings.home.map(w=>w.id));for(const[id,on]of HOME_DEFAULT)if(!ids.has(id))st.settings.home.push({id,on:!!on});st.v=5;return st}
 function makeSample(){const s=makeSampleV4();s.settings.accent='aurora';s.settings.theme='dark';return s}
 function applyAccent(){const k=S&&S.settings.accent||'aurora';const a=ACCENTS[k]||ACCENTS.aurora;const r=document.documentElement.style;r.setProperty('--accent',a[0]);r.setProperty('--on-accent',a[1]);r.setProperty('--accent2',ACCENT2[k]||'#A46BFF')}
@@ -21,7 +21,7 @@ const TABLIST=[['home','Today','home'],['train','Train','train'],['progress','Pr
 function render(){const top=ui.stack[ui.stack.length-1];const app=$('#app');
  if(!['home','train','progress','you'].includes(ui.tab)){const t=ui.tab;ui.tab=TABMAP[t]||'home';if(ui.tab==='progress')ui.psub=t==='history'?'history':t==='prs'?'prs':'stats'}
  app.className=top?'stack':'';
- app.innerHTML=enhance(top?(VIEWS[top.v]?VIEWS[top.v](top):''):TABS[ui.tab]());
+ app.innerHTML=addGear(enhance(top?(VIEWS[top.v]?VIEWS[top.v](top):''):TABS[ui.tab]()),top);
  const tabs=$('#tabs');tabs.hidden=!!top;
  tabs.innerHTML=TABLIST.map(([k,l,i])=>`<button class="tab ${ui.tab===k?'on':''} ${ui.nav==='tab'&&ui.tab===k?'bump':''}" data-act="tab" data-t="${k}" aria-current="${ui.tab===k?'page':'false'}">${ic(i,24)}<span>${l}</span></button>`).join('');
  $('#exnames').innerHTML=[...exNames().values()].sort().map(n=>`<option value="${esc(n)}"></option>`).join('');
@@ -63,7 +63,7 @@ const YOU_GROUPS=[['Goals and motivation',[['goals','target','Goals',()=>S.goals
  ['Body and health',[['body','scale','Body',()=>S.body.length?plural(S.body.length,'entry','entries'):'Weight, body fat, waist'],['injuries','bandage','Injuries',()=>activeInj().length?plural(activeInj().length,'active injury','active injuries'):'Nothing tracked'],['journal','book','Journal',()=>S.journal.length?plural(S.journal.length,'entry','entries'):'Notes and photos'],['readiness','gauge','Readiness',()=>`Today ${readiness()}`]]],
  ['Training setup',[['gear','shoe','Shoes and bikes',()=>S.gear.length?plural(S.gear.filter(g=>!g.retired).length,'item'):'Kilometres per pair'],['zones','gauge','Training zones',()=>'Pace and heart rate'],['race','flag','Race',()=>S.race&&S.race.date?esc(S.race.name||'Race')+' · '+fmtDate(new Date(S.race.date+'T09:00').getTime()):'Countdown and predicted time'],['customize','sliders','Customize Today',()=>'Cards, order and size'],['onboard','sliders','Set up my plan',()=>'Three questions, then a plan']]],
  ['Connections',[['sync','sync','Sync between devices',()=>esc(syncLabel())],['strava','link','Strava',()=>S.strava.access?'Connected':'Import your history']]],
- ['App',[['appearance','sliders','Appearance and accessibility',()=>ACCENTS[S.settings.accent||'aurora'][2]+' accent'],['settings','gear','Backup and data',()=>S.lastBackup?'Last backup '+fmtDate(S.lastBackup):'Save or restore a backup']]]];
+ ['App',[['settings','gear','All settings',()=>'Look, workouts, data and help'],['visual','sliders','Visual customization',()=>visSummary()]]]];
 function vYou(){const n=S.sessions.length;const first=S.sessions[0];const tot=S.sessions.reduce((t,s)=>t+(s.duration||0),0);
  return `<header class="hdr"><div><div class="eyebrow">${first?'Training since '+fmtDate(first.start,{month:'long',year:'numeric'}):'Welcome'}</div><h1 class="h1">You</h1></div></header>
  <div class="tiles"><div class="tile"><b>${n}</b><span>workouts</span></div><div class="tile"><b>${fmtNum(tot/3600,0)}<small>h</small></b><span>trained</span></div><div class="tile"><b>${weekStreak()}<small>wk</small></b><span>streak</span></div></div>
@@ -71,7 +71,7 @@ function vYou(){const n=S.sessions.length;const first=S.sessions[0];const tot=S.
  ${YOU_GROUPS.map(([g,rows])=>`<div class="ygroup"><div class="sec"><div class="h2">${g}</div></div><div class="list">${rows.map(([v,i,t,s])=>`<div class="yrow" data-q="${esc((t+' '+g).toLowerCase())}">${navRow(v,i,t,s())}</div>`).join('')}</div></div>`).join('')}
  <div class="ygroup"><div class="sec"><div class="h2">Daily</div></div><div class="card yrow" data-q="daily check-in ask how i feel" style="padding:4px 16px">${sw(S.settings.dailyAsk!==false,'toggleDailyAsk','','Ask how I feel each morning')}</div>
  <div class="list yrow" data-q="tutorial tour help"><button class="li" data-act="tourStart"><span class="lt" style="--c:var(--accent)">${ic('school',19)}</span><span class="grow"><span class="t">Interactive tutorial</span><span class="s">A guided tour with sample data</span></span><span class="chev">${ic('chev',20)}</span></button></div></div>
- <p class="hint" style="text-align:center">${APP} · Version 5.1</p>`}
+ <p class="hint" style="text-align:center">${APP} · Version 6.0</p>`}
 function vAppearance(){const st=S.settings;return `${topbar('Appearance')}<h1 class="h1">Appearance</h1>
  <div class="field"><span>Accent</span><div class="swatches">${Object.entries(ACCENTS).sort((a,b)=>(a[0]==='aurora'?-1:0)-(b[0]==='aurora'?-1:0)).map(([k,v])=>`<button class="swatch ${(st.accent||'aurora')===k?'on':''}" style="--c:${v[0]};background:linear-gradient(135deg,${v[0]},${ACCENT2[k]})" data-act="accent" data-k="${k}" aria-label="${v[2]}">${(st.accent||'aurora')===k?ic('check',18):''}</button>`).join('')}</div></div>
  <div class="field"><span>Text size</span>${seg([['normal','Normal'],['large','Large']],st.textSize||'normal','setPref','data-k="textSize"')}</div>
@@ -99,7 +99,7 @@ function vHome(){const now=Date.now();const pend=S.strava.pending.length;const w
  <div class="sortable" data-sortable="home">${cards}</div>
  ${needBackup?`<div class="card"><b>Keep a copy of your data</b><p class="muted sm">Your workouts live only on this phone. Turn on sync to keep them on your other devices too.</p><button class="btn primary" data-act="go" data-v="sync">Turn on sync</button></div>`:''}`}
 /* --- floating quick log --- */
-function renderFab(){let f=$('#fab');if(!f){f=document.createElement('div');f.id='fab';document.body.appendChild(f)}const show=!ui.stack.length&&ui.tab==='home'&&!ui.sheet;f.hidden=!show;if(!show){ui.fan=false;f.innerHTML='';return}
+function renderFab(){let f=$('#fab');if(!f){f=document.createElement('div');f.id='fab';document.body.appendChild(f)}const show=!ui.stack.length&&ui.tab==='home'&&!ui.sheet&&S.settings.fab!==false;f.hidden=!show;if(!show){ui.fan=false;f.innerHTML='';return}
  const items=[['startSheet','play','Start workout'],['quickSheet','other','Log activity'],['bodySheet','scale','Log weight'],['dailyOpen','heart','Check-in'],['logPast','history','Past workout']];
  f.innerHTML=`${ui.fan?`<div class="fanbg" data-act="fanClose"></div><div class="fan">${items.map(([a,i,l],k)=>`<button class="fanit" style="--k:${k}" data-act="${a}" data-fan="1"><span>${l}</span><i>${ic(i,19)}</i></button>`).join('')}</div>`:''}<button class="fabbtn ${ui.fan?'open':''}" data-act="${ui.fan?'fanClose':'quickSheet'}" aria-label="${ui.fan?'Close':'Quick log. Press and hold for more'}">${ic('plusc',26)}</button>`}
 /* --- exercise page --- */
@@ -122,7 +122,7 @@ function vStats(){const h=vStatsV4();const i=h.indexOf('</select></label>');retu
 function vHistory(){return vHistoryV3()}
 
 /* --- workout screen --- */
-function startSession(s){if(S.active){toast('Finish or discard the current workout first');ui.sheet=null;openSession();return}ui.smode='focus';ui.fi=0;ui.fsMap={};S.active=s;save();openSession()}
+function startSession(s){if(S.active){toast('Finish or discard the current workout first');ui.sheet=null;openSession();return}ui.smode=S.settings.focusDefault===false?'list':'focus';ui.fi=0;ui.fsMap={};S.active=s;save();openSession()}
 function exTools(x){return x.flat?`<div class="extools"><button class="hot" data-act="liveStart" data-eid="${x.id}">${ic('play',14)} Interval timer</button></div>`:''}
 const exHead=x=>`<button class="qbtn" data-act="swapSheet" data-eid="${x.id}" aria-label="Swap exercise">${ic('swap',17)}<span>Swap</span></button><button class="qbtn icon" data-act="exMenu" data-eid="${x.id}" aria-label="More for this exercise">${ic('dots',18)}</button>`;
 function swapNote(x){return x.swappedFrom?`<div class="swapnote">${ic('swap',14)}<span>Swapped from <b>${esc(x.swappedFrom)}</b> for this workout</span><button class="btn sm ghost" data-act="swapBack" data-eid="${x.id}">${ic('undo',14)} Undo</button></div>`:''}

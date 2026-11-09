@@ -1,9 +1,9 @@
 import json,os
 from PIL import Image, ImageDraw
 D=os.path.dirname(os.path.abspath(__file__))
-css=open(f'{D}/style.css').read()+open(f'{D}/style-v4.css').read()+open(f'{D}/style-v5.css').read()
+css=open(f'{D}/style.css').read()+open(f'{D}/style-v4.css').read()+open(f'{D}/style-v5.css').read()+open(f'{D}/style-v6.css').read()
 import re
-FILES=['a-core.js','b-views.js','c-app.js','e-domain.js','f-views.js','g-stats.js','h-app.js','i-v4.js','j-views.js','k-app.js','l-ux.js','m-fix.js','n-v5.js','o-var.js','d-boot.js']
+FILES=['a-core.js','b-views.js','c-app.js','e-domain.js','f-views.js','g-stats.js','h-app.js','i-v4.js','j-views.js','k-app.js','l-ux.js','m-fix.js','n-v5.js','o-var.js','p-v6.js','d-boot.js']
 START=re.compile(r"^(function |async function |const |let |/\*|'use strict'|Object\.assign|VIEWS\.|UI_BINDS|document\.|window\.|setInterval|save=|\(async|HOME_WIDGETS|SYNC_COLLS|ACT\.|syncNow=|mergeStates=|render=|\[)")
 chunks=[]
 for f in FILES:
@@ -61,7 +61,7 @@ head='''<!doctype html>
 open(f'{out}/index.html','w').write(head+body+'</body>\n</html>\n')
 json.dump({"name":"Tempo","short_name":"Tempo","description":"Plan, log and track gym, running and cycling training.","start_url":"./","scope":"./","display":"standalone","background_color":"#0A0820","theme_color":"#120B2E","orientation":"portrait","icons":[{"src":"icon-192-v5.png","sizes":"192x192","type":"image/png"},{"src":"icon-512-v5.png","sizes":"512x512","type":"image/png"},{"src":"icon-maskable-512-v5.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]},open(f'{out}/manifest.json','w'),indent=2)
 open(f'{out}/sw.js','w').write('''// Tempo offline cache. Bump VERSION on every update so phones fetch the new files.
-const VERSION='tempo-5.1.0';
+const VERSION='tempo-6.0.0';
 const FILES=['./','./index.html','./manifest.json','./icon-192-v5.png','./icon-512-v5.png','./icon-maskable-512-v5.png','./apple-touch-icon-v5.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
