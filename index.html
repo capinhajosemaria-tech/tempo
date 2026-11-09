@@ -599,7 +599,7 @@ body.anim .ring .prog{animation:draw 1.1s cubic-bezier(.2,.8,.2,1) both}
 #tour .tcard .btnrow{margin-top:6px}
 .cue .ic{display:inline-block;vertical-align:-3px;margin-right:4px}
 /* v4.1 fixes */
-html,body{overflow-x:hidden;max-width:100%}
+html,body{overflow-x:clip;max-width:100%}
 #app{overflow-x:clip}
 .feat{clip-path:inset(0 round var(--r));isolation:isolate}
 .feat .plate{right:-30px;top:-30px;width:150px;height:150px}
@@ -612,6 +612,11 @@ html,body{overflow-x:hidden;max-width:100%}
 .dqh b{font-weight:600;font-size:15px}
 .dq .ckc button{min-height:44px;font-size:16px;font-weight:500}
 .ckc button{text-align:center;display:grid;place-items:center}
+/* v4.2: solid top bar, large-title behaviour */
+.topbar{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom:1px solid transparent;transition:border-color .2s}
+body.scrolled .topbar{border-bottom-color:var(--line)}
+#app.hasbig .tb-title{opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s}
+body.scrolled #app.hasbig .tb-title{opacity:1;transform:none}
 </style>
 
 <div id="app"></div>
@@ -1148,7 +1153,7 @@ function vSettingsV2(){
  ${ui.pendingImport?`<div class="banner"><div><b>Ready to restore</b><br><span class="muted">${plural(ui.pendingImport.plans.length,'plan')} and ${plural(ui.pendingImport.sessions.length,'workout')}. Your current data will be replaced.</span></div><button class="btn sm danger" data-act="importConfirm" data-confirm="Tap again to replace">Restore</button></div>`:''}</div>
  <div class="sec"><div class="h2">Data</div></div>
  <div class="card"><p class="muted sm">${plural(S.plans.length,'plan')} · ${plural(S.sessions.length,'workout')} · ${plural(S.prs.length,'added record')}</p><button class="btn danger" data-act="clearAll" data-confirm="Tap again to erase everything">Erase all data</button><p class="hint">With sync on, erasing also clears the synced copy.</p></div>
- <p class="hint">${APP} works offline once installed. iPhone: Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install app. Version 4.1.</p>`}
+ <p class="hint">${APP} works offline once installed. iPhone: Safari → Share → Add to Home Screen. Android: Chrome → ⋮ → Install app. Version 4.2.</p>`}
 function vSync(){const y=S.sync;const inPreview=/claude\.ai|claudeusercontent/.test(location.hostname);
  if(!y.token)return `${topbar('Sync')}
  <h1 class="h1">Sync between devices</h1>
@@ -2692,6 +2697,9 @@ Object.assign(ACT,{
  toggleDailyAsk:()=>{S.settings.dailyAsk=S.settings.dailyAsk===false;save();render()}});
 setTimeout(function waitBoot(){if(!S){setTimeout(waitBoot,300);return}setTimeout(maybeAskCheck,700)},400);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(maybeAskCheck,600)});
+function markBig(){const a=$('#app');if(!a)return;const top=ui.stack[ui.stack.length-1];a.classList.toggle('hasbig',!!top&&!!a.querySelector('.topbar ~ h1.h1, .topbar ~ div > h1.h1, .topbar ~ .hdr h1.h1'))}
+const _renderV41=render;render=function(){_renderV41();markBig();document.body.classList.toggle('scrolled',window.scrollY>36)};
+window.addEventListener('scroll',()=>{document.body.classList.toggle('scrolled',window.scrollY>36)},{passive:true});
 
 (async function boot(){
  await DB.open();let raw=await DB.get('state');
